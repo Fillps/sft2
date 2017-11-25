@@ -13,7 +13,7 @@ regra1: $(SRC_DIR)/*.c
 	mv *.o $(BIN_DIR)
 
 regra2:  $(BIN_DIR)/t2fs.o $(LIB_DIR)/apidisk.o
-	ar crs $(LIB_DIR)/libt2fs.a $(BIN_DIR)/t2fs.o $(LIB_DIR)/apidisk.o
+	ar crs $(LIB_DIR)/libt2fs.a $(BIN_DIR)/*.o $(LIB_DIR)/apidisk.o
 
 clean:
 	rm -rf $(LIB_DIR)/*.a $(BIN_DIR)/*.o

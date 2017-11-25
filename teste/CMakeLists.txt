@@ -5,16 +5,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
 
 include_directories(../include)
-link_directories(../lib)
+#link_directories(../lib)
 
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 set(SOURCE_FILES
         unit_tests.cpp
-        ../src/t2fs.c
         ../include/apidisk.h
         ../include/t2fs.h
-        ../lib/apidisk.o)
+        ../include/util.h
+        ../include/logic.h
+        ../lib/apidisk.o
+        ../src/t2fs.c
+        ../src/logic.c
+        ../include/logic_extra.h)
 
 add_executable(tests ${SOURCE_FILES})
 

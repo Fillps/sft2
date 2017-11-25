@@ -8,8 +8,12 @@ include_directories(include)
 set(SOURCE_FILES
         include/apidisk.h
         include/t2fs.h
+        include/logic.h
+        include/util.h
         src/t2fs.c
-        lib/apidisk.o)
+        src/logic.c
+        lib/apidisk.o
+        )
 
 
 add_library(libt2fs.a ${SOURCE_FILES})

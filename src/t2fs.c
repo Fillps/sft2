@@ -2,28 +2,6 @@
 #include "t2fs.h"
 
 #define SECTOR_SIZE 256
-struct t2fs_superbloco *superbloco;
-
-int procuraClusterLivre(){
-	
-	int clusterSize = superbloco->SectorsPerCluster;
-	char *buffer = (char*) malloc(clusterSize);
-	int numCluster = 2;		// CLUSTER 0 E 1 SÃO RESERVADOS
-	
-	read_block(superbloco->pFATSectorStart + numCluster, buffer);
-	
-	while( (unsigned int) *buffer != 0x00000000 )
-	{
-		numCluster++;
-		read_sector(superbloco->pFATSectorStart + numCluster, buffer);	// No buffer ficam os dados lidos
-	}
-	
-	buffer == NULL;
-	return numCluster;
-}
-
-
-
 
 /*-----------------------------------------------------------------------------
 Função: Usada para identificar os desenvolvedores do T2FS.

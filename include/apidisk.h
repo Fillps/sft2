@@ -14,7 +14,6 @@
 #ifndef __apidisk_h__
 #define __apidisk_h__
 
-#ifndef SECTOR_SIZE
 #define SECTOR_SIZE 256
 
 /*------------------------------------------------------------------------
