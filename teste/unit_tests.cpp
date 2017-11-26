@@ -7,17 +7,15 @@ extern "C"
 {
 #endif
 
-#include <logic.h>
+#include "logic.h"
 #include "logic_extra.h"
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
+#include "t2fs.h"
 
 #ifdef __cplusplus
 }
 #endif
 
-#include <t2fs.h>
+
 #include "gtest/gtest.h"
 
 
@@ -37,6 +35,7 @@ void copy(char *source, char *dest)
         execl("/bin/cp", "/bin/cp", source, dest, (char *)0);
     }
     else if (pid < 0) {
+        printf("\nErro ao reset no disco!\n");
         /* error - couldn't start process - you decide how to handle */
     }
     else {
@@ -79,10 +78,10 @@ TEST_F(T2FSTest, fat_read_write){
     DeleteFile(0x10);
     getFat()->data[getFat()->size-1] = EOF_CLUSTER;
     char* original_fat = (char*)(malloc(getFat()->size * 4));
-    strcpy(original_fat, getFat()->data);
+    strcpy((char*)original_fat, (char*)getFat()->data);
     FatWrite();
     InitFat();
-    ASSERT_EQ(strcmp(original_fat, getFat()->data), 0);
+    ASSERT_STREQ(original_fat, getFat()->data);
     free(original_fat);
 }
 
@@ -114,6 +113,7 @@ TEST_F(T2FSTest, create_append_delete){
     ASSERT_EQ(getFat()->data[appended_cluster], FREE_CLUSTER);
     ASSERT_EQ(getFat()->data[second_append], FREE_CLUSTER);
 }
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

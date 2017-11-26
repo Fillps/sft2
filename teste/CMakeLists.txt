@@ -18,7 +18,7 @@ set(SOURCE_FILES
         ../lib/apidisk.o
         ../src/t2fs.c
         ../src/logic.c
-        ../include/logic_extra.h)
+        ../include/logic_extra.h ../include/data.h ../include/data_extra.h ../src/data.c)
 
 add_executable(tests ${SOURCE_FILES})
 

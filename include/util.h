@@ -1,7 +1,3 @@
-//
-// Created by filipe on 11/24/17.
-//
-
 #ifndef T2FS_UTIL_H
 #define T2FS_UTIL_H
 

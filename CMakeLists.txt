@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
-project(cthread)
+project(t2fs)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 98)
 
 include_directories(include)
 
@@ -13,7 +13,7 @@ set(SOURCE_FILES
         src/t2fs.c
         src/logic.c
         lib/apidisk.o
-        )
+        include/data.h src/data.c)
 
 
 add_library(libt2fs.a ${SOURCE_FILES})

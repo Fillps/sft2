@@ -2,15 +2,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <t2fs.h>
-#include <apidisk.h>
-#include <logic.h>
+#include "t2fs.h"
+#include "apidisk.h"
+#include "logic.h"
+#include "util.h"
 
 
 t2fs_superbloco_s* superbloco;
 fat_s* fat;
 
 BOOL isInit = FALSE;
+
+void Init();
+void DeleteFile(int cluster);
+int CreateFile();
+int AppendCluster(int cluster);
+int getNextCluster(int cluster);
+void SuperBlockRead();
+void InitSuperBlock();
+void SuperBlockPrint();
+void InitFat();
+void FatRead(int n_sectors);
+void FatPrint(int n);
+void FatWrite();
+int getFreeCluster();
 
 /**
  * Inicia o Superbloco e a Fat, indicando que já foi inicializado.
@@ -32,7 +47,7 @@ void InitSuperBlock() {
  * Lê o superbloco. Se não conseguir, acaba o programa.
  */
 void SuperBlockRead() {
-    if (read_sector(SB_SECTOR, (char*)superbloco)!=0){
+    if (read_sector(SB_SECTOR, (unsigned char*)superbloco)!=0){
         perror("Erro ao ler o superbloco!");
         exit(SB_READ_ERROR);
     }
@@ -41,7 +56,7 @@ void SuperBlockRead() {
  * Salva o superbloco.
  */
 void SuperBlockWrite(){
-    if (write_sector(SB_SECTOR, (char*) superbloco)!=0){
+    if (write_sector(SB_SECTOR, (unsigned char*) superbloco)!=0){
         perror("Erro ao salvar o superbloco!");
         exit(SB_WRITE_ERROR);
     }
@@ -60,7 +75,6 @@ void SuperBlockPrint() {
     printf("Número do setor lógico onde a FAT inicia: %d\n", superbloco->pFATSectorStart);
     printf("Cluster onde inicia o arquivo correspon- dente ao diretório raiz: %d\n", superbloco->RootDirCluster);
     printf("Primeiro setor lógico da área de blocos de dados (cluster 0): %d\n", superbloco->DataSectorStart);
-
 }
 
 /**
@@ -69,7 +83,7 @@ void SuperBlockPrint() {
  * @param sector
  */
 void FatReadSector(char* buffer, int sector){
-    if (read_sector(sector, buffer)!=0){
+    if (read_sector(sector, (unsigned char*)buffer)!=0){
         perror("Erro ao ler a FAT!");
         exit(FAT_READ_ERROR);
     }
@@ -92,7 +106,7 @@ void FatRead(int n_sectors){
 /**
  * Procura o próximo cluster livre após o cluster inicado.
  * @param after: ponto inicial da procura
- * @return o próximo cluster livre
+ * @return se foi possível achar um cluster livre
  */
 int set_first_free(int after) {
     for (int i = after; i < fat->size; i++){
@@ -196,7 +210,7 @@ int AppendCluster(int cluster){
  * Salva a Fat no disco.
  */
 void FatWrite(){
-    if (write_sector(superbloco->pFATSectorStart, fat->data)!=0){
+    if (write_sector(superbloco->pFATSectorStart, (unsigned char*)fat->data)!=0){
         perror("Nao foi possivel salvar a FAT!. Saindo.");
         exit(FAT_WRITE_ERROR);
     }
@@ -211,6 +225,17 @@ void FatPrint(int n){
         printf("%x = %x\n", i, fat->data[i]);
 }
 
+/**
+ * Pega o pŕoximo cluster.
+ * @param cluster
+ * @return retorna o próximo cluster.
+ *         -1 se 2 > cluster >= BAD_CLUSTER
+ */
+int getNextCluster(int cluster){
+    if (cluster<2 && cluster>=BAD_CLUSTER)
+        return fat->data[cluster];
+    return -1;
+}
 
 /*
  * FUNÇÔES PARA TESTE

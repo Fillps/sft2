@@ -1,0 +1,4 @@
+#ifndef T2FS_DATA_EXTRA_H
+#define T2FS_DATA_EXTRA_H
+
+#endif //CTHREAD_DATA_EXTRA_H

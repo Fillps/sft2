@@ -1,9 +1,6 @@
 
-#ifndef T2FS_LOGIC_SECTORS
-#define T2FS_LOGIC_SECTORS
-
-#include "util.h"
-
+#ifndef T2FS_LOGIC_H
+#define T2FS_LOGIC_H
 
 #define SB_READ_ERROR -10
 #define SB_WRITE_ERROR -11
@@ -12,9 +9,9 @@
 
 #define SB_SECTOR 0
 
-#define EOF_CLUSTER 0xFFFFFFFF
-#define BAD_CLUSTER 0xFFFFFFFE
-#define FREE_CLUSTER 0x00000000
+#define FREE_CLUSTER 0x0
+static unsigned int BAD_CLUSTER = 0xFFFFFFFD;
+static unsigned int EOF_CLUSTER = 0xFFFFFFFF;
 
 /** Fat */
 typedef struct{
@@ -29,6 +26,7 @@ void Init();
 void DeleteFile(int cluster);
 int CreateFile();
 int AppendCluster(int cluster);
+int getNextCluster(int cluster);
 
 
 #endif

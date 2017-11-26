@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include "t2fs.h"
 
 #define SECTOR_SIZE 256
@@ -259,7 +260,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna o identifi
 -----------------------------------------------------------------------------*/
 DIR2 opendir2 (char *pathname){
     //TODO
-    return NULL;
+    return 0;
 }
 
 
