@@ -16,6 +16,7 @@ extern "C"
 #endif
 
 
+#include <logic.h>
 #include "gtest/gtest.h"
 
 
@@ -69,7 +70,7 @@ protected:
     }
 
     virtual void TearDown() {
-        copy("t2fs_disk_cp.dat", "t2fs_disk.dat");//Reset no disco
+        copy((char*)"t2fs_disk_cp.dat", (char*)"t2fs_disk.dat");//Reset no disco
     }
 };
 
@@ -78,7 +79,7 @@ TEST_F(T2FSTest, fat_read_write){
     DeleteFile(0x10);
     getFat()->data[getFat()->size-1] = EOF_CLUSTER;
     char* original_fat = (char*)(malloc(getFat()->size * 4));
-    strcpy((char*)original_fat, (char*)getFat()->data);
+    strcpy(original_fat, getFat()->data);
     FatWrite();
     InitFat();
     ASSERT_STREQ(original_fat, getFat()->data);
@@ -86,24 +87,24 @@ TEST_F(T2FSTest, fat_read_write){
 }
 
 TEST_F(T2FSTest, create_append_delete){
-    int first_free = getFat()->first_free;
-    int file_cluster = CreateFile();
-    if (file_cluster==-1){
+    unsigned int first_free = getFat()->first_free;
+    unsigned int file_cluster = CreateFile(1);
+    if (file_cluster==CLUSTER_NOT_AVAILABLE){
         printf("\nSem espaco no disco!\n");
         return;
     }
     ASSERT_EQ(first_free, file_cluster);
     ASSERT_EQ(getFat()->data[file_cluster], EOF_CLUSTER);
     first_free = getFat()->first_free;
-    int appended_cluster = AppendCluster(file_cluster);
-    if (appended_cluster==-1){
+    unsigned int appended_cluster = AppendFile(file_cluster, 1);
+    if (appended_cluster==CLUSTER_NOT_AVAILABLE){
         printf("\nSem espaco no disco!\n");
         return;
     }
     ASSERT_EQ(first_free, appended_cluster);
     ASSERT_EQ(getFat()->data[file_cluster], appended_cluster);
-    int second_append = AppendCluster(file_cluster);
-    if (second_append==-1){
+    unsigned int second_append = AppendFile(file_cluster, 1);
+    if (second_append==CLUSTER_NOT_AVAILABLE){
         printf("\nSem espaco no disco!\n");
         return;
     }

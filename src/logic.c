@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <logic.h>
 
 #include "t2fs.h"
 #include "apidisk.h"
@@ -14,10 +15,12 @@ fat_s* fat;
 BOOL isInit = FALSE;
 
 void Init();
-void DeleteFile(int cluster);
-int CreateFile();
-int AppendCluster(int cluster);
-int getNextCluster(int cluster);
+unsigned int DeleteFileWithoutSaving(unsigned int cluster);
+unsigned int DeleteFile(unsigned int cluster);
+unsigned int CreateFile(int n_clusters);
+unsigned int AppendOneCluster(unsigned int cluster);
+unsigned int AppendFile(unsigned int cluster, int n_clusters);
+unsigned int getNextCluster(unsigned int cluster);
 void SuperBlockRead();
 void InitSuperBlock();
 void SuperBlockPrint();
@@ -25,7 +28,7 @@ void InitFat();
 void FatRead(int n_sectors);
 void FatPrint(int n);
 void FatWrite();
-int getFreeCluster();
+unsigned int getFreeCluster();
 
 /**
  * Inicia o Superbloco e a Fat, indicando que já foi inicializado.
@@ -106,16 +109,17 @@ void FatRead(int n_sectors){
 /**
  * Procura o próximo cluster livre após o cluster inicado.
  * @param after: ponto inicial da procura
- * @return se foi possível achar um cluster livre
+ * @return TRUE se foi possível achar um cluster livre
+ *         FALSE se nao foi possivel
  */
-int set_first_free(int after) {
-    for (int i = after; i < fat->size; i++){
+int set_first_free(unsigned int after) {
+    for (unsigned int i = after; i < fat->size; i++){
         if (fat->data[i]==FREE_CLUSTER){
             fat->first_free = i;
             return TRUE;
         }
     }
-    fat->first_free = -1;
+    fat->first_free = CLUSTER_NOT_AVAILABLE;
     return FALSE;
 }
 
@@ -137,73 +141,130 @@ void InitFat(){
  * Libera um cluster.
  * @param cluster : cluster a ser liberado.
  */
-void FreeCluster(int cluster){
+void FreeCluster(unsigned int cluster){
     fat->data[cluster] = FREE_CLUSTER;
-    if (fat->first_free > cluster)
+    if (fat->first_free != CLUSTER_NOT_AVAILABLE || fat->first_free > cluster)
         fat->first_free = cluster;
 }
+
 /**
  * Deleta um arquivo tendo como parametro seu cluster inicial.
- * Apaga todos os clusters ligados ao seu cluster inicial
+ * Apaga todos os clusters ligados ao seu cluster inicial.
  * @param cluster : cluster inicial do aquivo
+ * @return SUCCESS se deletar sem encontrar erros
+ *         CLUSTER_ERROR se encontrar um BAD_CLUSTER ou FREE_CLUSTER
  */
-void DeleteFile(int cluster){
-    int next_cluster = fat->data[cluster];
+unsigned int DeleteFileWithoutSaving(unsigned int cluster){
+    unsigned int next_cluster = fat->data[cluster];
     if (next_cluster==BAD_CLUSTER || next_cluster==FREE_CLUSTER)
-        return;
+        return CLUSTER_ERROR;
     FreeCluster(cluster);
     while (next_cluster!=EOF_CLUSTER){
         cluster = next_cluster;
         next_cluster = fat->data[cluster];
         if (next_cluster==BAD_CLUSTER || next_cluster==FREE_CLUSTER)
-            return;
+            return CLUSTER_ERROR;
         FreeCluster(cluster);
     }
-    FatWrite();
+    return SUCCESS;
 }
 
 /**
- * Cria um arquivo com apenas um cluster. Salva a Fat no disco.
- * @return  o cluster do arquivo
+ * Deleta um arquivo tendo como parametro seu cluster inicial.
+ * Apaga todos os clusters ligados ao seu cluster inicial
+ * Salva a fat no disco. Se encontrar erros, reverte todas as mudancas.
+ * @param cluster : cluster inicial do aquivo
+ * @return SUCCESS se deletar o arquivos sem erros.
+ *         CLUSTER_ERROR se encontrar erros.
  */
-int CreateFile(){
-    int cluster = getFreeCluster();
+unsigned int DeleteFile(unsigned int cluster){
+    if (DeleteFileWithoutSaving(cluster)==CLUSTER_ERROR){
+        InitFat();//reset na fat
+        return CLUSTER_ERROR;
+    }
     FatWrite();
-    return cluster;
+    return SUCCESS;
+}
+
+/**
+ * Cria um arquivo com n clusters. Salva a Fat no disco.
+ * @return  o cluster inicial do arquivo
+ *          CLUSTER_NOT_AVAILABLE se não encontrar cluster suficientes.
+ */
+unsigned int CreateFile(int n_clusters){
+    unsigned int first_cluster = getFreeCluster();
+    if (first_cluster == CLUSTER_NOT_AVAILABLE)
+        return CLUSTER_NOT_AVAILABLE;
+    if (n_clusters > 1){
+        if (AppendFile(first_cluster, n_clusters - 1)==CLUSTER_NOT_AVAILABLE)//AppendFile da o reset na Fat
+            return CLUSTER_NOT_AVAILABLE;
+    }
+    else
+        FatWrite();
+    return first_cluster;
 }
 
 /**
  * Lococa o próximo cluster livre como o fim de um arquivo.
  * Procura um pŕoximo cluster livre.
  * @return o cluster a ser usado como fim de arquivo
+ *         CLUSTER_NOT_AVAILABLE se não encontrar um cluster livre disponível.
  */
-int getFreeCluster(){
-    if (fat->data[fat->first_free] == -1)
-        return -1;
+unsigned int getFreeCluster(){
+    if (fat->data[fat->first_free] == CLUSTER_NOT_AVAILABLE)
+        return CLUSTER_NOT_AVAILABLE;
     fat->data[fat->first_free] = EOF_CLUSTER;
-    int cluster = fat->first_free;
+    unsigned int cluster = fat->first_free;
     set_first_free(cluster);
     return cluster;
 }
 
 /**
- * Adiciona um cluster no fim de um arquivo. Salva a Fat no disco.
+ * Adiciona um cluster no fim de um arquivo.
  * @param cluster: cluster do arquivo a ser adicionado
- * @return o cluster que foi adicionado
+ * @return o cluster que foi adicionado.
+ *         CLUSTER_ERROR se encontrar algum BAD_CLUSTER ou FREE_CLUSTER no arquivo.
+ *         CLUSTER_NOT_AVAILABLE se não encontrar um cluster livre disponível.
  */
-int AppendCluster(int cluster){
-    int next_cluster = fat->data[cluster];
+unsigned int AppendOneCluster(unsigned int cluster){
+    unsigned int next_cluster = fat->data[cluster];
     if (next_cluster==BAD_CLUSTER || next_cluster==FREE_CLUSTER)
-        return -1;
+        return CLUSTER_ERROR;
     while (next_cluster!=EOF_CLUSTER){
         cluster = next_cluster;
         next_cluster = fat->data[cluster];
         if (next_cluster==BAD_CLUSTER || next_cluster==FREE_CLUSTER)
-            return -1;
+            return CLUSTER_ERROR;
     }
-    fat->data[cluster] = getFreeCluster();
+    unsigned int cluster_to_append = getFreeCluster();
+    if (cluster_to_append == CLUSTER_NOT_AVAILABLE)
+        return CLUSTER_NOT_AVAILABLE;
+    fat->data[cluster] = cluster_to_append;
+    return cluster_to_append;
+}
+
+/**
+ * Adiciona n clusters apartir do fim do arquivo. Salva a Fat no disco.
+ * Reverte as mudancas caso nao tenha espaco disponivel.
+ * @param cluster
+ * @param n_clusters
+ * @return o primeiro cluster adicionado.
+ *         CLUSTER_NOT_AVAILABLE caso nao tenha clusters disponiveis.
+ */
+unsigned int AppendFile(unsigned int cluster, int n_clusters){
+    unsigned int first_cluster = AppendOneCluster(cluster);
+    if (first_cluster == CLUSTER_NOT_AVAILABLE)
+        return CLUSTER_NOT_AVAILABLE;
+    cluster = first_cluster;
+    for (unsigned int i = 1; i < n_clusters; i++){
+        cluster = AppendOneCluster(cluster);
+        if (cluster == CLUSTER_NOT_AVAILABLE){
+            InitFat();//regarrega a fat novamente, dando um reset nas mudancas feitas.
+            return CLUSTER_NOT_AVAILABLE;
+        }
+    }
     FatWrite();
-    return fat->data[cluster];
+    return first_cluster;
 }
 
 /**
@@ -231,10 +292,10 @@ void FatPrint(int n){
  * @return retorna o próximo cluster.
  *         -1 se 2 > cluster >= BAD_CLUSTER
  */
-int getNextCluster(int cluster){
+unsigned int getNextCluster(unsigned int cluster){
     if (cluster<2 && cluster>=BAD_CLUSTER)
         return fat->data[cluster];
-    return -1;
+    return CLUSTER_ERROR;
 }
 
 /*

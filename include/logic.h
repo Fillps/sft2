@@ -13,20 +13,24 @@
 static unsigned int BAD_CLUSTER = 0xFFFFFFFD;
 static unsigned int EOF_CLUSTER = 0xFFFFFFFF;
 
+#define SUCCESS 0
+#define CLUSTER_NOT_AVAILABLE 1
+#define CLUSTER_ERROR 1
+
 /** Fat */
 typedef struct{
     char* data;
     int size;
-    int first_free;
+    unsigned int first_free;
 }fat_s;
 
 typedef struct t2fs_superbloco t2fs_superbloco_s;
 
 void Init();
-void DeleteFile(int cluster);
-int CreateFile();
-int AppendCluster(int cluster);
-int getNextCluster(int cluster);
+unsigned int DeleteFile(unsigned int cluster);
+unsigned int CreateFile(int n_clusters);
+unsigned int AppendFile(unsigned int cluster, int n_clusters);
+unsigned int getNextCluster(unsigned int cluster);
 
 
 #endif
