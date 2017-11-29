@@ -179,7 +179,23 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int mkdir2 (char *pathname){
-    //TODO
+    int cluster;
+	int clusterSize;
+	char name[MAX_FILE_NAME_SIZE];
+	
+	cluster = CreateFile( 1 );	//Todo diretorio ocupa 1 cluster
+									//Recebe cluster livre
+	write_block(cluster,temp)
+	
+	newDir = createNewDir(*name,firstcluster);
+	isRoot(newDir);
+	
+	
+	
+	
+	free(newDir);
+	newDir == NULL;
+	
     return 0;
 }
 
