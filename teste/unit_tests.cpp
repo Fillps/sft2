@@ -10,13 +10,15 @@ extern "C"
 #include "logic.h"
 #include "logic_extra.h"
 #include "t2fs.h"
+#include "data.h"
+#include "data_extra.h"
 
 #ifdef __cplusplus
 }
 #endif
 
 
-#include <logic.h>
+#include <data.h>
 #include "gtest/gtest.h"
 
 
@@ -66,7 +68,8 @@ void copy(char *source, char *dest)
 class T2FSTest: public ::testing::Test {
 protected:
     virtual void SetUp() {
-        Init();
+        InitLogic();
+        InitData();
     }
 
     virtual void TearDown() {
@@ -76,6 +79,7 @@ protected:
 
 
 TEST_F(T2FSTest, fat_read_write){
+    SuperBlockPrint();
     DeleteFile(0x10);
     getFat()->data[getFat()->size-1] = EOF_CLUSTER;
     char* original_fat = (char*)(malloc(getFat()->size * 4));
@@ -115,6 +119,10 @@ TEST_F(T2FSTest, create_append_delete){
     ASSERT_EQ(getFat()->data[second_append], FREE_CLUSTER);
 }
 
+TEST_F(T2FSTest, root){
+    dir_s* dir = getDir();
+    printf("\n%i\n", strlen(dir->records[0].name));
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

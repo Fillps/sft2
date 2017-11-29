@@ -2,6 +2,8 @@
 #ifndef T2FS_LOGIC_H
 #define T2FS_LOGIC_H
 
+#include "t2fs.h"
+
 #define SB_READ_ERROR -10
 #define SB_WRITE_ERROR -11
 #define FAT_READ_ERROR -12
@@ -26,11 +28,13 @@ typedef struct{
 
 typedef struct t2fs_superbloco t2fs_superbloco_s;
 
-void Init();
+void InitLogic();
 unsigned int DeleteFile(unsigned int cluster);
 unsigned int CreateFile(int n_clusters);
 unsigned int AppendFile(unsigned int cluster, int n_clusters);
 unsigned int getNextCluster(unsigned int cluster);
+t2fs_superbloco_s* getSuperbloco();
+int getEntryNClusters(DWORD first_cluser);
 
 
 #endif

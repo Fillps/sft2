@@ -14,7 +14,7 @@ fat_s* fat;
 
 BOOL isInit = FALSE;
 
-void Init();
+void InitLogic();
 unsigned int DeleteFileWithoutSaving(unsigned int cluster);
 unsigned int DeleteFile(unsigned int cluster);
 unsigned int CreateFile(int n_clusters);
@@ -33,7 +33,7 @@ unsigned int getFreeCluster();
 /**
  * Inicia o Superbloco e a Fat, indicando que já foi inicializado.
  */
-void Init(){
+void InitLogic(){
     InitSuperBlock();
     InitFat();
     isInit = TRUE;
@@ -267,6 +267,16 @@ unsigned int AppendFile(unsigned int cluster, int n_clusters){
     return first_cluster;
 }
 
+int getEntryNClusters(DWORD first_cluser){
+    int i = 1;
+    first_cluser = getNextCluster(first_cluser);
+    while (first_cluser!=EOF_CLUSTER){
+        i++;
+        first_cluser = getNextCluster(first_cluser);
+    }
+    return i;
+}
+
 /**
  * Salva a Fat no disco.
  */
@@ -293,7 +303,7 @@ void FatPrint(int n){
  *         -1 se 2 > cluster >= BAD_CLUSTER
  */
 unsigned int getNextCluster(unsigned int cluster){
-    if (cluster<2 && cluster>=BAD_CLUSTER)
+    if (cluster>1 && cluster<BAD_CLUSTER)
         return fat->data[cluster];
     return CLUSTER_ERROR;
 }
