@@ -1,8 +1,23 @@
 #include <string.h>
 #include <stdio.h>
+#include "data.h"
 #include "t2fs.h"
+#include "util.h"
+#include "logic.h"
 
 #define SECTOR_SIZE 256
+
+
+BOOL isInit = FALSE;
+
+void Init(){
+    if (isInit==FALSE){
+        InitLogic();
+        InitData();
+        isInit = TRUE;
+    }
+}
+
 
 /*-----------------------------------------------------------------------------
 Função: Usada para identificar os desenvolvedores do T2FS.
@@ -18,6 +33,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int identify2 (char *name, int size){
+    Init();
     static char *id = "Filipe Santos - 273175\nCamilla - 237738\nMarcelo - 230090";
     strncpy(name,id,size);
     name[size - 1] = '\0'; //strnpy nao adiciona o null no fim da string
@@ -39,6 +55,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna o handle d
 	Em caso de erro, deve ser retornado um valor negativo.
 -----------------------------------------------------------------------------*/
 FILE2 create2 (char *filename){
+    Init();
     //TODO
     return 0;
 }
@@ -54,6 +71,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int delete2 (char *filename){
+    Init();
     //TODO
     return 0;
 }
@@ -74,6 +92,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna o handle d
 	Em caso de erro, deve ser retornado um valor negativo
 -----------------------------------------------------------------------------*/
 FILE2 open2 (char *filename){
+    Init();
     //TODO
     return 0;
 }
@@ -88,6 +107,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int close2 (FILE2 handle){
+    Init();
     //TODO
     return 0;
 }
@@ -107,6 +127,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna o número 
 	Em caso de erro, será retornado um valor negativo.
 -----------------------------------------------------------------------------*/
 int read2 (FILE2 handle, char *buffer, int size){
+    Init();
     //TODO
     return 0;
 }
@@ -125,6 +146,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna o número 
 	Em caso de erro, será retornado um valor negativo.
 -----------------------------------------------------------------------------*/
 int write2 (FILE2 handle, char *buffer, int size){
+    Init();
     //TODO
     return 0;
 }
@@ -142,6 +164,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int truncate2 (FILE2 handle){
+    Init();
     //TODO
     return 0;
 }
@@ -161,6 +184,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int seek2 (FILE2 handle, unsigned int offset){
+    Init();
     //TODO
     return 0;
 }
@@ -179,6 +203,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int mkdir2 (char *pathname){
+    Init();
     //TODO
     return 0;
 }
@@ -200,6 +225,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int rmdir2 (char *pathname){
+    Init();
     //TODO
     return 0;
 }
@@ -220,8 +246,8 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int chdir2 (char *pathname){
-    //TODO
-    return 0;
+    Init();
+    return cd(pathname);
 }
 
 
@@ -240,8 +266,8 @@ Saída:
 	incluindo espaço insuficiente, conforme informado por "size".
 -----------------------------------------------------------------------------*/
 int getcwd2 (char *pathname, int size){
-    //TODO
-    return 0;
+    Init();
+    return getCurPath(pathname, size);
 }
 
 
@@ -259,8 +285,9 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna o identifi
 	Em caso de erro, será retornado um valor negativo.
 -----------------------------------------------------------------------------*/
 DIR2 opendir2 (char *pathname){
-    //TODO
-    return 0;
+    Init();
+    //return OpenDir(pathname);
+    return -1;
 }
 
 
@@ -283,8 +310,8 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 -----------------------------------------------------------------------------*/
 //END_OF_DIR=1
 int readdir2 (DIR2 handle, DIRENT2 *dentry){
-    //TODO
-    return 0;
+    Init();
+    return ReadDirInfo(handle, dentry);
 }
 
 
@@ -297,7 +324,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero)
 	Em caso de erro, será retornado um valor diferente de zero.
 -----------------------------------------------------------------------------*/
 int closedir2 (DIR2 handle){
-    //TODO
-    return 0;
+    Init();
+    return DeleteDirHandler(handle);
 }
 

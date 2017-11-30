@@ -12,7 +12,7 @@
 t2fs_superbloco_s* superbloco;
 fat_s* fat;
 
-BOOL isInit = FALSE;
+BOOL isInitLogic = FALSE;
 
 void InitLogic();
 unsigned int DeleteFileWithoutSaving(unsigned int cluster);
@@ -36,13 +36,13 @@ unsigned int getFreeCluster();
 void InitLogic(){
     InitSuperBlock();
     InitFat();
-    isInit = TRUE;
+    isInitLogic = TRUE;
 }
 /**
  * Inicia o superbloco, reutilizando a memória se ele já foi inicializado.
  */
 void InitSuperBlock() {
-    if (isInit==FALSE)
+    if (isInitLogic==FALSE)
         superbloco = malloc(SECTOR_SIZE);
     SuperBlockRead();
 }
@@ -128,7 +128,7 @@ int set_first_free(unsigned int after) {
  */
 void InitFat(){
     int n_cluster = (superbloco->NofSectors - superbloco->DataSectorStart)/superbloco->SectorsPerCluster;
-    if (isInit==FALSE) {
+    if (isInitLogic==FALSE) {
         fat = malloc(sizeof(fat_s *));
         fat->data = malloc(n_cluster*sizeof(DWORD));
     }

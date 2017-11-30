@@ -8,6 +8,7 @@
 #define TYPEVAL_INVALIDO    0x00
 #define TYPEVAL_REGULAR     0x01
 #define TYPEVAL_DIRETORIO   0x02
+#define END_OF_DIR 1
 
 typedef int FILE2;
 typedef int DIR2;

@@ -12,6 +12,7 @@ extern "C"
 #include "t2fs.h"
 #include "data.h"
 #include "data_extra.h"
+#include "apidisk.h"
 
 #ifdef __cplusplus
 }
@@ -19,6 +20,8 @@ extern "C"
 
 
 #include <data.h>
+#include <t2fs.h>
+
 #include "gtest/gtest.h"
 
 
@@ -120,8 +123,28 @@ TEST_F(T2FSTest, create_append_delete){
 }
 
 TEST_F(T2FSTest, root){
-    dir_s* dir = getDir();
-    printf("\n%i\n", strlen(dir->records[0].name));
+    PrintDir();
+    //OpenDir("dir1/../dir1");
+    PrintDir();
+    //OpenDir("/");
+    PrintDir();
+
+}
+
+TEST_F(T2FSTest, open_dir){
+    //int handle = opendir2("dir1");
+    //DIRENT2* dirent2 = (DIRENT2*) calloc(5, sizeof(DIRENT2));
+    //PrintDirHandlers();
+    //readdir2(handle, dirent2);
+    
+}
+
+TEST_F(T2FSTest, cd_getpath){
+    ASSERT_EQ(cd("dir1"), SUCCESS);
+    char path[200];
+    ASSERT_EQ(getcwd2(path, 200), SUCCESS);
+    ASSERT_STREQ(path, "/dir1");
+
 }
 
 int main(int argc, char **argv) {
